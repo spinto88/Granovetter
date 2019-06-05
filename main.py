@@ -1,16 +1,28 @@
 from granovetter import GranovetterModel
+import matplotlib.pyplot as plt
+import numpy as np
 
-model = GranovetterModel(25, threshold = 'normal', mu = 0.3, sigma = 0.50)
+np.random.seed(12357)
+
+model = GranovetterModel(100, topology = 'complete', threshold = 'normal', mu = 0.6, sigma = 0.30)
 
 model.activate_nodes(1)
 
-model.image()
+model.threshold_histogram()
 
-print model.number_of_active_nodes()
+plt.ion()
 
-model.evol2convergence()
+fig = plt.figure(figsize = (13,13))
 
-print model.number_of_active_nodes()
+model.image(fig)
 
-model.image()
+for i in range(20):
+    model.evolve()
+    model.image(fig)
+    print 'Step {}'.format(i)
+
+plt.ioff()
+
+model.image(fig)
+
 

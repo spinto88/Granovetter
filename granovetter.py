@@ -4,12 +4,20 @@ import warnings
 
 class GranovetterModel(nx.Graph):
 
+    """ GranovetterModel. Arguments:
+
+	n = number of agents in the system
+	topology = ... of the network. 'complete' for a complete graph or 'scale-free' for a Barabasi-Albert graph with m = 2
+	threshold = type of threshold distribution. 'uniform' for a uniform distribution between 0 and 1, and 'normal' for a truncated normal distribution betweeen 0 and 1. The normal distribution parameters can be passed as 'mu' and 'sigma'.
+    """
+
     def __init__(self, n, topology = 'complete', threshold = 'uniform', **kwargs):
 
         self.n = n
-
+        # Graph initialization
         nx.Graph.__init__(self)
 
+        # Setting network topology
         if topology == 'complete':
             nx.complete_graph(n, create_using = self)
         elif topology == 'scale-free':
@@ -17,6 +25,7 @@ class GranovetterModel(nx.Graph):
             nx.empty_graph(create_using = self)
             self.add_edges_from(aux_graph.edges())
 
+        # Positions to network visualization 
         nodes_positions = nx.spring_layout(self)
         for node in self.nodes():
              self.node[node]['pos'] = nodes_positions[node]
@@ -27,6 +36,7 @@ class GranovetterModel(nx.Graph):
 
     def set_nodes_threshold(self, threshold, **kwargs):
 
+        """ Threshold setting """
         for node in self.nodes():
             if threshold == 'uniform':
                 self.node[node]['threshold'] = np.random.random()
@@ -40,7 +50,8 @@ class GranovetterModel(nx.Graph):
                     pass
 
     def threshold_histogram(self, file2save = None):
-
+        
+        """ Threshold histogram: it can be used to visualize the histogram. This figure can be saved in file2save."""
         hist, edges = np.histogram([self.node[node]['threshold'] for node in self.nodes()], \
                                        bins = np.arange(-0.05, 1.15, 0.1), density = True)
 
@@ -55,7 +66,8 @@ class GranovetterModel(nx.Graph):
            plt.savefig(file2save, dpi = 300)
 
     def activate_nodes(self, initial_number_of_active = 1):
-
+        
+        """ Activate a certain number of agents to start the dynamics."""
         for node in self.nodes():
             self.node[node]['active'] = False
 
@@ -64,11 +76,11 @@ class GranovetterModel(nx.Graph):
             self.node[node]['active'] = True
 
     def number_of_active_nodes(self):
-
+        """ Number of active nodes in the system """ 
         return len([node for node in self.nodes() if self.node[node]['active'] == True])
 
     def checkconvergence(self):
-
+        """ Check if there is at least one non-active agent that would be able to become active. In this case, the condition of convergence is False """
         for node in self.nodes():
             active_neighbors = [True for nod in self.neighbors(node) if self.node[nod]['active'] == True]
             if (self.node[node]['threshold'] < (float(len(active_neighbors)) / self.degree(node))) and self.node[node]['active'] == False:
@@ -76,7 +88,7 @@ class GranovetterModel(nx.Graph):
         return True
 
     def evolve(self):
-
+        """ One step of evolution. It tries to activate all the non-active nodes """
         deactive_nodes = [node for node in self.nodes() if self.node[node]['active'] == False]
         if len(deactive_nodes) == 0:
             return 'All nodes activated'
@@ -94,6 +106,7 @@ class GranovetterModel(nx.Graph):
 
     def evol2convergence(self):
 
+        """ Evolve to convergenge: it does all the necessary steps to arrive to the final state, when no change is possible to do."""
         steps = 0
         while self.checkconvergence() == False:
             self.evolve()
@@ -101,6 +114,15 @@ class GranovetterModel(nx.Graph):
         return steps
 
     def image(self, fig, file2save = None):
+
+        """ Image of the configuration: the fig argument is a matplotlib.pyplot figure.
+        In the main file call: 
+        import matplotlib.pyplot as plt
+
+        fig = plt.figure()
+        self.image(fig = fig)
+
+        With plt.ion() ... plt.ioff() the image is displayed in an interactive way."""
 
         import matplotlib.pyplot as plt
 

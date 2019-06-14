@@ -33,10 +33,10 @@ fig = plt.figure(figsize = (13,13))
 model.image(fig)
 
 for i in range(number_of_iterations):
-    # Make one iteration and show the system
-    model.evolve()
-    model.image(fig)
-    print 'Step {} - Active agents {}'.format(i, model.number_of_active_nodes())
+	# Make one iteration and show the system
+	model.evolve()
+	model.image(fig)
+	print 'Step {} - Active agents {}'.format(i, model.number_of_active_nodes())
 
 plt.ioff()
 

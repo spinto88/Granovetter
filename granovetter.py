@@ -67,11 +67,11 @@ class GranovetterModel(nx.Graph):
 	def activate_nodes(self, initial_number_of_active = 1):
         
 		""" Activate a certain number of agents to start the dynamics."""
+		nodes_sorted = sorted(self.nodes(), key = lambda x: self.nodes()[x]['threshold'])
 		for node in self.nodes():
 			self.node[node]['active'] = False
 
-		active_initial_nodes = np.random.choice(range(self.n), initial_number_of_active, replace = False)
-		for node in active_initial_nodes:
+		for node in nodes_sorted[:initial_number_of_active]:
 			self.node[node]['active'] = True
 
 	def number_of_active_nodes(self):
@@ -83,7 +83,7 @@ class GranovetterModel(nx.Graph):
 		for node in self.nodes():
 			active_neighbors = [True for nod in self.neighbors(node) if self.node[nod]['active'] == True]
 			if (self.node[node]['threshold'] < (float(len(active_neighbors)) / self.degree(node))) and self.node[node]['active'] == False:
-			return False
+				return False
 
 		return True
 

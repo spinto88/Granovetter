@@ -1,0 +1,4 @@
+  File "recorrido.py", line 15
+    for sigma np.arange(0.10, 0.71, 0.10):
+               ^
+SyntaxError: invalid syntax

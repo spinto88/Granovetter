@@ -78,40 +78,32 @@ class GranovetterModel(nx.Graph):
 		""" Number of active nodes in the system """ 
 		return len([node for node in self.nodes() if self.node[node]['active'] == True])
 
-	def checkconvergence(self):
-		""" Check if there is at least one non-active agent that would be able to become active. In this case, the condition of convergence is False """
-		for node in self.nodes():
-			active_neighbors = [True for nod in self.neighbors(node) if self.node[nod]['active'] == True]
-			if (self.node[node]['threshold'] < (float(len(active_neighbors)) / self.degree(node))) and self.node[node]['active'] == False:
-				return False
+	def evol2convergence(self):
+		""" One step of evolution. It tries to activate all the non-active nodes """
+		deactive_nodes = [node for node in self.nodes() if self.node[node]['active'] == False]
+		deactive_nodes = sorted(deactive_nodes, key = lambda x: self.node[x]['threshold'])
 
+		for node in deactive_nodes:
+			if self.node[node]['active'] == False:
+			    active_neighbors = [1 if self.node[nd]['active'] == True else 0 for nd in self.neighbors(node)]
+			    if (float(sum(active_neighbors)) / self.degree(node)) >= self.node[node]['threshold']:
+				self.node[node]['active'] = True
+			    else:
+ 				break
 		return True
 
 	def evolve(self):
 		""" One step of evolution. It tries to activate all the non-active nodes """
 		deactive_nodes = [node for node in self.nodes() if self.node[node]['active'] == False]
-		if len(deactive_nodes) == 0:
-			return 'All nodes activated'
-		else:
-			for step in range(len(deactive_nodes)):
+		deactive_nodes = sorted(deactive_nodes, key = lambda x: self.node[x]['threshold'])
 
-				random_node = deactive_nodes[np.random.choice(range(len(deactive_nodes)))]
+		node = deactive_nodes[0]
+		if self.node[node]['active'] == False:
+		    active_neighbors = [1 if self.node[nd]['active'] == True else 0 for nd in self.neighbors(node)]
+		    if (float(sum(active_neighbors)) / self.degree(node)) >= self.node[node]['threshold']:
+			self.node[node]['active'] = True
 
-				active_neighbors = [True for node in self.neighbors(random_node) if self.node[node]['active'] == True]
-
-				if (float(len(active_neighbors)) / self.degree(random_node)) > self.node[random_node]['threshold']:
-					self.node[random_node]['active'] = True
-
-			return None
-
-	def evol2convergence(self):
-
-		""" Evolve to convergenge: it does all the necessary steps to arrive to the final state, when no change is possible to do."""
-		steps = 0
-		while self.checkconvergence() == False:
-			self.evolve()
-			steps += 1
-		return steps
+		return None
 
 	def image(self, fig, file2save = None):
 
@@ -141,7 +133,7 @@ class GranovetterModel(nx.Graph):
 		fig.canvas.draw()
 
 		if file2save is not None:
-			fig.set_size_inches(13, 13)
+			fig.set_size_inches(6, 6)
 			fig.savefig(file2save, dpi = 300)
 		else:
 			plt.show()
